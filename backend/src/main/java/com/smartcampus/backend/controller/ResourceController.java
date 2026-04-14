@@ -20,4 +20,10 @@ public class ResourceController {
     public List<Resource> getAllResources() {
         return resourceService.getAllResources();
     }
+
+    // ✅ INSIDE class
+    @PostMapping
+    public Resource createResource(@RequestBody Resource resource) {
+        return resourceService.createResource(resource);
+    }
 }

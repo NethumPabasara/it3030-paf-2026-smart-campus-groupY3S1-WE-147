@@ -18,4 +18,8 @@ public class ResourceService {
     public List<Resource> getAllResources() {
         return resourceRepository.findAll();
     }
+
+    public Resource createResource(Resource resource) {
+    return resourceRepository.save(resource);
+}
 }
