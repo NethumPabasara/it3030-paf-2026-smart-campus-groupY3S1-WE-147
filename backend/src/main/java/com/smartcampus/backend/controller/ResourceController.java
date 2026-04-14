@@ -26,4 +26,11 @@ public class ResourceController {
     public Resource createResource(@Valid @RequestBody Resource resource) {
     return resourceService.createResource(resource);
     }
+
+    @PutMapping("/{id}")
+        public Resource updateResource(
+        @PathVariable Long id,
+        @Valid @RequestBody Resource resource) {
+    return resourceService.updateResource(id, resource);
+}
 }
