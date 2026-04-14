@@ -32,5 +32,11 @@ public class ResourceController {
         @PathVariable Long id,
         @Valid @RequestBody Resource resource) {
     return resourceService.updateResource(id, resource);
-}
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteResource(@PathVariable Long id) {
+    resourceService.deleteResource(id);
+    return "Resource deleted successfully";
+    }
 }
