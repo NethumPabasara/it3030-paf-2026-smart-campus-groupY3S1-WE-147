@@ -5,6 +5,7 @@ import com.smartcampus.backend.service.ResourceService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -21,9 +22,8 @@ public class ResourceController {
         return resourceService.getAllResources();
     }
 
-    // ✅ INSIDE class
-    @PostMapping
-    public Resource createResource(@RequestBody Resource resource) {
-        return resourceService.createResource(resource);
+   @PostMapping
+    public Resource createResource(@Valid @RequestBody Resource resource) {
+    return resourceService.createResource(resource);
     }
 }
