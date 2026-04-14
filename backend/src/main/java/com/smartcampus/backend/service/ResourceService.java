@@ -36,4 +36,11 @@ public class ResourceService {
     return resourceRepository.save(resource);
     }
 
+    public void deleteResource(Long id) {
+    Resource resource = resourceRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Resource not found"));
+
+    resourceRepository.delete(resource);
+    }
+
 }
