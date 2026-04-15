@@ -3,6 +3,7 @@ package com.smartcampus.backend.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import com.smartcampus.backend.exception.BookingConflictException;
 
 import java.util.*;
 
@@ -33,6 +34,26 @@ public class GlobalExceptionHandler {
 
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
+
+        return error;
+    }
+
+    @ExceptionHandler(BookingConflictException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBookingConflict(BookingConflictException ex) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+
+        return error;
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleGeneralException(Exception ex) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "Something went wrong");
 
         return error;
     }
