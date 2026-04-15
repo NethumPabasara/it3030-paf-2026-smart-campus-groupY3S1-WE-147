@@ -4,6 +4,7 @@ import com.smartcampus.backend.entity.Booking;
 import com.smartcampus.backend.exception.BookingConflictException;
 import com.smartcampus.backend.repository.BookingRepository;
 import org.springframework.stereotype.Service;
+import com.smartcampus.backend.dto.BookingDTO;
 
 import java.util.List;
 
@@ -16,20 +17,31 @@ public class BookingService {
         this.bookingRepository = bookingRepository;
     }
 
-    public Booking createBooking(Booking booking) {
+    public BookingDTO createBooking(Booking booking) {
 
-        // 🔥 CHECK CONFLICT
-        List<Booking> conflicts = bookingRepository
-                .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        booking.getResource().getId(),
-                        booking.getEndTime(),
-                        booking.getStartTime()
-                );
+    // 🔥 CHECK CONFLICT
+    List<Booking> conflicts = bookingRepository
+            .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                    booking.getResource().getId(),
+                    booking.getEndTime(),
+                    booking.getStartTime()
+            );
 
-        if (!conflicts.isEmpty()) {
-            throw new BookingConflictException("Resource already booked for this time slot");
-        }
-
-        return bookingRepository.save(booking);
+    if (!conflicts.isEmpty()) {
+        throw new BookingConflictException("Resource already booked for this time slot");
     }
+
+    // SAVE booking
+    Booking saved = bookingRepository.save(booking);
+
+    // 🔥 CONVERT TO DTO
+    BookingDTO dto = new BookingDTO();
+    dto.setId(saved.getId());
+    dto.setResourceId(saved.getResource().getId());
+    dto.setBookedBy(saved.getBookedBy());
+    dto.setStartTime(saved.getStartTime());
+    dto.setEndTime(saved.getEndTime());
+
+    return dto;
+}
 }
