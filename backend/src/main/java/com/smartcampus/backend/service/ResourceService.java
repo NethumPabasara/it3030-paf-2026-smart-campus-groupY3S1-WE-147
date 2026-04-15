@@ -19,6 +19,11 @@ public class ResourceService {
         return resourceRepository.findAll();
     }
 
+    public Resource getResourceById(Long id) {
+    return resourceRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Resource not found"));
+    }
+
     public Resource createResource(Resource resource) {
     return resourceRepository.save(resource);
     }
