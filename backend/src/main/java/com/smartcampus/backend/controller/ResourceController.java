@@ -1,5 +1,7 @@
 package com.smartcampus.backend.controller;
 
+import com.smartcampus.backend.dto.ApiResponse;
+import com.smartcampus.backend.dto.ResourceDTO;
 import com.smartcampus.backend.entity.Resource;
 import com.smartcampus.backend.service.ResourceService;
 import org.springframework.web.bind.annotation.*;
@@ -18,30 +20,30 @@ public class ResourceController {
     }
 
     @GetMapping
-    public List<Resource> getAllResources() {
-        return resourceService.getAllResources();
-    }
+    public ApiResponse<List<ResourceDTO>> getAllResources() {
+    return new ApiResponse<>(true, resourceService.getAllResources());
+   }
 
     @GetMapping("/{id}")
-    public Resource getResourceById(@PathVariable Long id) {
-        return resourceService.getResourceById(id);
+    public ApiResponse<ResourceDTO> getResourceById(@PathVariable Long id) {
+    return new ApiResponse<>(true, resourceService.getResourceById(id));
     }
 
    @PostMapping
-    public Resource createResource(@Valid @RequestBody Resource resource) {
-    return resourceService.createResource(resource);
+    public ApiResponse<ResourceDTO> createResource(@Valid @RequestBody Resource resource) {
+    return new ApiResponse<>(true, resourceService.createResource(resource));
     }
 
     @PutMapping("/{id}")
-        public Resource updateResource(
+        public ApiResponse<ResourceDTO> updateResource(
         @PathVariable Long id,
         @Valid @RequestBody Resource resource) {
-    return resourceService.updateResource(id, resource);
+    return new ApiResponse<>(true, resourceService.updateResource(id, resource));
     }
 
     @DeleteMapping("/{id}")
-    public String deleteResource(@PathVariable Long id) {
+    public ApiResponse<String> deleteResource(@PathVariable Long id) {
     resourceService.deleteResource(id);
-    return "Resource deleted successfully";
+    return new ApiResponse<>(true, "Resource deleted successfully");
     }
 }
