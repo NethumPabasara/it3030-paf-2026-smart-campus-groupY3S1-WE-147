@@ -1,6 +1,7 @@
 package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.entity.Resource;
+import com.smartcampus.backend.exception.ResourceNotFoundException;
 import com.smartcampus.backend.repository.ResourceRepository;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,7 @@ public class ResourceService {
 
     public Resource getResourceById(Long id) {
     return resourceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Resource not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 
     public Resource createResource(Resource resource) {
@@ -30,7 +31,7 @@ public class ResourceService {
 
     public Resource updateResource(Long id, Resource updatedResource) {
     Resource resource = resourceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Resource not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
     resource.setName(updatedResource.getName());
     resource.setType(updatedResource.getType());
@@ -43,7 +44,7 @@ public class ResourceService {
 
     public void deleteResource(Long id) {
     Resource resource = resourceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Resource not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
     resourceRepository.delete(resource);
     }
