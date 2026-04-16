@@ -37,4 +37,11 @@ public class BookingController {
         return "Booking deleted successfully";
     }
 
+    @PutMapping("/{id}")
+    public BookingDTO updateBooking(
+        @PathVariable Long id,
+        @RequestBody Booking booking) {
+        return bookingService.updateBooking(id, booking);
+    }
+
 }

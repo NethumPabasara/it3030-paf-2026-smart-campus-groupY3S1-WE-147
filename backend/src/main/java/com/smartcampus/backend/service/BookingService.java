@@ -8,16 +8,22 @@ import org.springframework.stereotype.Service;
 import com.smartcampus.backend.dto.BookingDTO;
 
 import java.util.List;
+import com.smartcampus.backend.repository.ResourceRepository;
+import com.smartcampus.backend.entity.Resource;
 
 @Service
 public class BookingService {
 
     private final BookingRepository bookingRepository;
-    
 
-    public BookingService(BookingRepository bookingRepository) {
-        this.bookingRepository = bookingRepository;
-    }
+    private final ResourceRepository resourceRepository;
+
+public BookingService(BookingRepository bookingRepository,
+                      ResourceRepository resourceRepository) {
+    this.bookingRepository = bookingRepository;
+    this.resourceRepository = resourceRepository;
+}
+    
 
     public BookingDTO createBooking(Booking booking) {
 
@@ -83,6 +89,41 @@ private BookingDTO convertToDTO(Booking booking) {
             .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
 
         bookingRepository.delete(booking);
+    }
+
+    public BookingDTO updateBooking(Long id, Booking updatedBooking) {
+
+    Booking existing = bookingRepository.findById(id)
+            .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+
+    // 🔥 CHECK CONFLICT (excluding current booking)
+    List<Booking> conflicts = bookingRepository
+            .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                    updatedBooking.getResource().getId(),
+                    updatedBooking.getEndTime(),
+                    updatedBooking.getStartTime()
+            );
+
+    // remove current booking from conflict list
+    conflicts.removeIf(b -> b.getId().equals(id));
+
+    if (!conflicts.isEmpty()) {
+        throw new BookingConflictException("Resource already booked for this time slot");
+    }
+
+    // ✅ UPDATE fields
+    Resource resource = resourceRepository.findById(
+        updatedBooking.getResource().getId()
+).orElseThrow(() -> new RuntimeException("Resource not found"));
+
+existing.setResource(resource);
+    existing.setBookedBy(updatedBooking.getBookedBy());
+    existing.setStartTime(updatedBooking.getStartTime());
+    existing.setEndTime(updatedBooking.getEndTime());
+
+    Booking saved = bookingRepository.save(existing);
+
+        return convertToDTO(saved);
     }
 
 }
