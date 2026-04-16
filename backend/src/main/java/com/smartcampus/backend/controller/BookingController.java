@@ -30,4 +30,11 @@ public class BookingController {
     public BookingDTO getBookingById(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }
+
+    @DeleteMapping("/{id}")
+    public String deleteBooking(@PathVariable Long id) {
+    bookingService.deleteBooking(id);
+        return "Booking deleted successfully";
+    }
+
 }

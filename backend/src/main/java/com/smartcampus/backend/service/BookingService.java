@@ -76,4 +76,13 @@ private BookingDTO convertToDTO(Booking booking) {
 
         return convertToDTO(booking);
     }
+
+    public void deleteBooking(Long id) {
+
+    Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+
+        bookingRepository.delete(booking);
+    }
+
 }
