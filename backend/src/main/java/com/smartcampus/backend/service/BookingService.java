@@ -12,6 +12,7 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    
 
     public BookingService(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
@@ -36,12 +37,34 @@ public class BookingService {
 
     // 🔥 CONVERT TO DTO
     BookingDTO dto = new BookingDTO();
-    dto.setId(saved.getId());
-    dto.setResourceId(saved.getResource().getId());
-    dto.setBookedBy(saved.getBookedBy());
-    dto.setStartTime(saved.getStartTime());
-    dto.setEndTime(saved.getEndTime());
+        dto.setId(saved.getId());
+        dto.setResourceId(saved.getResource().getId());
+        dto.setBookedBy(saved.getBookedBy());
+        dto.setStartTime(saved.getStartTime());
+        dto.setEndTime(saved.getEndTime());
+        dto.setResourceName(saved.getResource().getName());
 
-    return dto;
-}
+        return dto;
+    }
+
+    public List<BookingDTO> getAllBookings() {
+    return bookingRepository.findAll()
+            .stream()
+            .map(this::convertToDTO)
+            .toList();
+    }
+
+private BookingDTO convertToDTO(Booking booking) {
+    BookingDTO dto = new BookingDTO();
+
+    dto.setId(booking.getId());
+    dto.setBookedBy(booking.getBookedBy());
+    dto.setStartTime(booking.getStartTime());
+    dto.setEndTime(booking.getEndTime());
+
+    dto.setResourceId(booking.getResource().getId());
+    dto.setResourceName(booking.getResource().getName());
+
+        return dto;
+    }
 }
