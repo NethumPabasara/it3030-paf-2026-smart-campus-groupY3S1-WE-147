@@ -2,6 +2,7 @@ package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.entity.Booking;
 import com.smartcampus.backend.exception.BookingConflictException;
+import com.smartcampus.backend.exception.BookingNotFoundException;
 import com.smartcampus.backend.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import com.smartcampus.backend.dto.BookingDTO;
@@ -71,7 +72,7 @@ private BookingDTO convertToDTO(Booking booking) {
     public BookingDTO getBookingById(Long id) {
 
     Booking booking = bookingRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found"));
+            .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
 
         return convertToDTO(booking);
     }
