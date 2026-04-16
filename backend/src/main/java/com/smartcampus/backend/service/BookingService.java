@@ -67,4 +67,12 @@ private BookingDTO convertToDTO(Booking booking) {
 
         return dto;
     }
+
+    public BookingDTO getBookingById(Long id) {
+
+    Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        return convertToDTO(booking);
+    }
 }
