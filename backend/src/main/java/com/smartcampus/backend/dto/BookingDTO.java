@@ -9,6 +9,8 @@ public class BookingDTO {
     private String bookedBy;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String resourceName;
+    
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -25,4 +27,12 @@ public class BookingDTO {
 
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+
+    public String getResourceName() {
+    return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+    this.resourceName = resourceName;
+    }
 }
