@@ -15,17 +15,19 @@ import com.smartcampus.backend.service.CustomUserDetailsService;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().authenticated()
-            )
-            .httpBasic();
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/resources/**").hasRole("ADMIN")
+            .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
+            .anyRequest().authenticated()
+        )
+        .httpBasic();
 
-        return http.build();
-    }
+    return http.build();
+}
 
 
     @Bean
