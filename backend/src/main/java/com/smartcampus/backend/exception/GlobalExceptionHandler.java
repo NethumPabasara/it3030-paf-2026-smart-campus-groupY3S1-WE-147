@@ -67,15 +67,15 @@ public Map<String, Object> handleBookingConflict(BookingConflictException ex) {
     }
 
     @ExceptionHandler(Exception.class)
-@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-public Map<String, Object> handleGeneralException(Exception ex) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, Object> handleGeneralException(Exception ex) {
+        ex.printStackTrace();
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", new Date());
+        error.put("status", 500);
+        error.put("error", ex.getClass().getName());
+        error.put("message", ex.getMessage());
 
-    Map<String, Object> error = new HashMap<>();
-    error.put("timestamp", new Date());
-    error.put("status", 500);
-    error.put("error", "Internal Server Error");
-    error.put("message", "Something went wrong");
-
-    return error;
-}
+        return error;
+    }
 }

@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -23,26 +22,26 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login**", "/oauth2/**").permitAll()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/error").permitAll()
+                .requestMatchers("/oauth2/**").permitAll()
+                .requestMatchers("/api/resources/**").hasRole("ADMIN")
+                .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated()
+            )
 
-                        // 🔒 ROLE-BASED ACCESS
-                        .requestMatchers("/api/resources/**").hasRole("ADMIN")
-                        .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(oAuth2UserServiceImpl)
+                )
+                // 🔥 THIS IS THE ONLY ADDITION
+                .defaultSuccessUrl("/api/bookings", true)
+            )
 
-                        .anyRequest().authenticated())
-
-                .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(oAuth2UserServiceImpl))
-                        // ✅ IMPORTANT: DO NOT FORCE REDIRECT
-                        .defaultSuccessUrl("/", false)
-                        .failureUrl("/login?error=true"))
-
-                .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> httpBasic.disable());
+            .formLogin(form -> form.disable())
+            .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
     }
