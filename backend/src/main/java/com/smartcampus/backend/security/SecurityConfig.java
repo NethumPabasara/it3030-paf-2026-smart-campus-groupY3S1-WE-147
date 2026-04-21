@@ -37,7 +37,7 @@ public class SecurityConfig {
                     .oidcUserService(oAuth2UserServiceImpl)
                 )
                 // 🔥 THIS IS THE ONLY ADDITION
-                .defaultSuccessUrl("/api/bookings", true)
+                .defaultSuccessUrl("/login-success", true)
             )
 
             .formLogin(form -> form.disable())
