@@ -2,59 +2,66 @@ package com.smartcampus.backend.service;
 
 import com.smartcampus.backend.entity.User;
 import com.smartcampus.backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.Map;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class OAuth2UserServiceImpl extends OidcUserService {
 
-    private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2UserServiceImpl.class);
 
-    public OAuth2UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
-    @Transactional
-    public OidcUser loadUser(OidcUserRequest userRequest)
-        throws OAuth2AuthenticationException {
-
-    OidcUser oAuth2User = super.loadUser(userRequest);
-
-    Map<String, Object> attributes = oAuth2User.getAttributes();
-
-    String email = oAuth2User.getAttribute("email");
-    if (email == null) {
-        throw new OAuth2AuthenticationException("Email not found from Google");
+    public OidcUser loadUser(OidcUserRequest userRequest) {
+        OidcUser oidcUser = super.loadUser(userRequest);
+        
+        String email = oidcUser.getEmail();
+        
+        if (!StringUtils.hasText(email)) {
+            throw new IllegalArgumentException("Email is required for OAuth2 login but was not provided");
+        }
+        
+        logger.info("OAuth2 login attempt for email: {}", email);
+        
+        // Always fetch fresh user data from database
+        User user = userRepository.findByUsername(email).orElse(null);
+        
+        if (user == null) {
+            logger.info("Creating new user for email: {}", email);
+            user = new User();
+            user.setUsername(email);
+            user.setRole("USER");
+            user.setPassword(""); // OAuth2 users don't have passwords
+            userRepository.save(user);
+        } else {
+            logger.info("Found existing user for email: {}, role: {}", email, user.getRole());
+        }
+        
+        // Always use the latest role from database
+        String role = user.getRole();
+        logger.info("Assigning role {} to user {}", role, email);
+        
+        List<SimpleGrantedAuthority> authorities = Collections.singletonList(
+            new SimpleGrantedAuthority("ROLE_" + role)
+        );
+        
+        DefaultOidcUser result = new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), "email");
+        
+        logger.info("OAuth2 user created with email: {}, authorities: {}", result.getEmail(), result.getAuthorities());
+        
+        return result;
     }
-
-    System.out.println("🔥 OAuth2UserServiceImpl CALLED: " + email);
-
-    User user = userRepository.findByUsername(email)
-            .orElseGet(() -> {
-                User newUser = new User();
-                newUser.setUsername(email);
-                newUser.setPassword("");
-                newUser.setRole("USER");
-                return userRepository.save(newUser);
-            });
-
-    return new DefaultOidcUser(
-        Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())
-        ),
-        oAuth2User.getIdToken(),
-        oAuth2User.getUserInfo(),
-        "email"
-    );
-}
 }
