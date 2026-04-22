@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Getter
@@ -26,4 +28,9 @@ public class Booking {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    @Enumerated(EnumType.STRING)
+private BookingStatus status;
+
+private String rejectionReason;
 }
