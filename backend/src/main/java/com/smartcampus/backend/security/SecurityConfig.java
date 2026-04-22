@@ -7,13 +7,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import com.smartcampus.backend.service.OAuth2UserServiceImpl;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
 
     private final OAuth2UserServiceImpl oAuth2UserServiceImpl;
@@ -35,9 +36,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
 
-                // Return 401 JSON for unauthenticated requests instead of redirecting
+                // Return JSON for 401 and 403 errors
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(customAuthenticationEntryPoint()))
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())
+                        .accessDeniedHandler(customAccessDeniedHandler()))
 
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
@@ -58,6 +60,16 @@ public class SecurityConfig {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(
                     "{\"error\": \"Unauthorized\", \"message\": \"Authentication is required to access this resource.\"}");
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler customAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write(
+                    "{\"error\": \"Forbidden\", \"message\": \"You do not have permission to access this resource.\"}");
         };
     }
 
