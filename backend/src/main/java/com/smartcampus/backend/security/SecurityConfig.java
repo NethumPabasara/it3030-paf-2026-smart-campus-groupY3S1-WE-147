@@ -17,10 +17,10 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
 
-    private final OAuth2UserServiceImpl oAuth2UserServiceImpl;
+    private final OAuth2UserServiceImpl customOidcUserService;
 
-    public SecurityConfig(OAuth2UserServiceImpl oAuth2UserServiceImpl) {
-        this.oAuth2UserServiceImpl = oAuth2UserServiceImpl;
+    public SecurityConfig(OAuth2UserServiceImpl customOidcUserService) {
+        this.customOidcUserService = customOidcUserService;
     }
 
     @Bean
@@ -43,7 +43,7 @@ public class SecurityConfig {
 
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(oAuth2UserServiceImpl))
+                                .oidcUserService(customOidcUserService))
                         // Return JSON upon successful login instead of redirecting
                         .successHandler(customSuccessHandler()))
 
