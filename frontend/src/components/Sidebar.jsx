@@ -1,25 +1,54 @@
-import { useState } from 'react';
-
+import { NavLink } from "react-router-dom";
 
 function Sidebar() {
-  const [activeItem, setActiveItem] = useState('Dashboard');
-
-  const menuItems = ['Dashboard', 'Bookings', 'Resources', 'Users'];
-
   return (
     <div className="sidebar">
       <h2 className="sidebar-logo">SmartCampus</h2>
 
       <ul className="sidebar-menu">
-        {menuItems.map((item) => (
-          <li
-            key={item}
-            className={`sidebar-menu-item ${activeItem === item ? 'active' : ''}`}
-            onClick={() => setActiveItem(item)}
+        <li>
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `sidebar-menu-item ${isActive ? "active" : ""}`
+            }
           >
-            {item}
-          </li>
-        ))}
+            Dashboard
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink
+            to="/bookings"
+            className={({ isActive }) =>
+              `sidebar-menu-item ${isActive ? "active" : ""}`
+            }
+          >
+            Bookings
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink
+            to="/resources"
+            className={({ isActive }) =>
+              `sidebar-menu-item ${isActive ? "active" : ""}`
+            }
+          >
+            Resources
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink
+            to="/users"
+            className={({ isActive }) =>
+              `sidebar-menu-item ${isActive ? "active" : ""}`
+            }
+          >
+            Users
+          </NavLink>
+        </li>
       </ul>
     </div>
   );
