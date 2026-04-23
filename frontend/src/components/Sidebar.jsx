@@ -1,9 +1,13 @@
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 function Sidebar() {
   return (
     <div className="sidebar">
-      <h2 className="sidebar-logo">SmartCampus</h2>
+      <div className="sidebar-logo-container">
+          <img src={logo} alt="SmartCampus Logo" className="sidebar-logo-img" />
+          <div className="sidebar-logo-text">SmartCampus</div>
+      </div>
 
       <ul className="sidebar-menu">
         <li>

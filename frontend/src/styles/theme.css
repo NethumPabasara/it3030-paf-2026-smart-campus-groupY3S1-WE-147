@@ -51,12 +51,37 @@ body {
   z-index: 100;
 }
 
-.sidebar-logo {
-  font-size: 1.5rem;
+.sidebar-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 35px;
+  padding: 15px 0;
+}
+
+.sidebar-logo-img {
+  height: 100px;
+  width: 100px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  object-fit: contain;
+  transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-logo-img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-logo-text {
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 30px;
   color: white;
   text-decoration: none;
+  letter-spacing: -0.3px;
+  margin-top: 4px;
 }
 
 .sidebar-menu {
@@ -258,4 +283,18 @@ body {
   .grid-cols-4 {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Logo Styling */
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.sidebar-logo-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
 }
