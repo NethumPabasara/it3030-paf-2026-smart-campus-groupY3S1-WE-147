@@ -1,29 +1,22 @@
 import MainLayout from "./layouts/MainLayout";
 
+
 function App() {
   return (
     <MainLayout>
-      <h1 style={{ marginBottom: "20px" }}>Dashboard</h1>
+      <h1 className="heading-1">Dashboard</h1>
 
-      <div style={{ display: "flex", gap: "20px" }}>
-        <div style={{
-          background: "#1E293B",
-          padding: "20px",
-          borderRadius: "10px",
-          width: "200px"
-        }}>
-          <h3>Total Bookings</h3>
-          <p>12</p>
+      <div className="grid grid-cols-2">
+        <div className="card">
+          <h3 className="card-title">Total Bookings</h3>
+          <p className="card-value">12</p>
+          <p className="text-muted">Active bookings this month</p>
         </div>
 
-        <div style={{
-          background: "#1E293B",
-          padding: "20px",
-          borderRadius: "10px",
-          width: "200px"
-        }}>
-          <h3>Resources</h3>
-          <p>8</p>
+        <div className="card">
+          <h3 className="card-title">Resources</h3>
+          <p className="card-value">8</p>
+          <p className="text-muted">Available resources</p>
         </div>
       </div>
     </MainLayout>

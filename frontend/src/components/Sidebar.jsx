@@ -1,19 +1,25 @@
-function Sidebar() {
-  return (
-    <div style={{
-      width: "220px",
-      background: "linear-gradient(180deg, #7C3AED, #4F46E5)",
-      color: "white",
-      minHeight: "100vh",
-      padding: "25px 20px"
-    }}>
-      <h2 style={{ marginBottom: "30px" }}>SmartCampus</h2>
+import { useState } from 'react';
 
-      <ul style={{ listStyle: "none", padding: 0, lineHeight: "2.5" }}>
-        <li>Dashboard</li>
-        <li>Bookings</li>
-        <li>Resources</li>
-        <li>Users</li>
+
+function Sidebar() {
+  const [activeItem, setActiveItem] = useState('Dashboard');
+
+  const menuItems = ['Dashboard', 'Bookings', 'Resources', 'Users'];
+
+  return (
+    <div className="sidebar">
+      <h2 className="sidebar-logo">SmartCampus</h2>
+
+      <ul className="sidebar-menu">
+        {menuItems.map((item) => (
+          <li
+            key={item}
+            className={`sidebar-menu-item ${activeItem === item ? 'active' : ''}`}
+            onClick={() => setActiveItem(item)}
+          >
+            {item}
+          </li>
+        ))}
       </ul>
     </div>
   );
