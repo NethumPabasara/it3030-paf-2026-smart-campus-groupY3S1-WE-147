@@ -1,25 +1,24 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 
+// Pages (we will create next)
+import Dashboard from "./pages/Dashboard";
+import Bookings from "./pages/Bookings";
+import Resources from "./pages/Resources";
+import Users from "./pages/Users";
 
 function App() {
   return (
-    <MainLayout>
-      <h1 className="heading-1">Dashboard</h1>
-
-      <div className="grid grid-cols-2">
-        <div className="card">
-          <h3 className="card-title">Total Bookings</h3>
-          <p className="card-value">12</p>
-          <p className="text-muted">Active bookings this month</p>
-        </div>
-
-        <div className="card">
-          <h3 className="card-title">Resources</h3>
-          <p className="card-value">8</p>
-          <p className="text-muted">Available resources</p>
-        </div>
-      </div>
-    </MainLayout>
+    <BrowserRouter>
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/users" element={<Users />} />
+        </Routes>
+      </MainLayout>
+    </BrowserRouter>
   );
 }
 
