@@ -3,7 +3,9 @@ package com.smartcampus.backend.controller;
 import com.smartcampus.backend.dto.BookingDTO;
 import com.smartcampus.backend.entity.Booking;
 import com.smartcampus.backend.service.BookingService;
-
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,53 +22,88 @@ public class BookingController {
 
     // CREATE
     @PostMapping
-    public BookingDTO createBooking(@RequestBody Booking booking) {
-        return bookingService.createBooking(booking);
+    public ResponseEntity<BookingDTO> createBooking(@Valid @RequestBody Booking booking) {
+        BookingDTO created = bookingService.createBooking(booking);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // GET ALL
     @GetMapping
-    public List<BookingDTO> getAllBookings() {
-        return bookingService.getAllBookings();
+    public ResponseEntity<List<BookingDTO>> getAllBookings() {
+        List<BookingDTO> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(bookings);
     }
 
     // GET BY ID
     @GetMapping("/{id}")
-    public BookingDTO getBookingById(@PathVariable Long id) {
-        return bookingService.getBookingById(id);
+    public ResponseEntity<BookingDTO> getBookingById(@PathVariable Long id) {
+        BookingDTO booking = bookingService.getBookingById(id);
+        return ResponseEntity.ok(booking);
     }
 
-    // DELETE
-    @DeleteMapping("/{id}")
-    public String deleteBooking(@PathVariable Long id) {
-        bookingService.deleteBooking(id);
-        return "Booking deleted successfully";
+    // GET BOOKINGS BY USERNAME
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<BookingDTO>> getBookingsByUsername(@PathVariable String username) {
+        List<BookingDTO> bookings = bookingService.getBookingsByUsername(username);
+        return ResponseEntity.ok(bookings);
+    }
+
+    // GET BOOKINGS BY RESOURCE ID
+    @GetMapping("/resource/{resourceId}")
+    public ResponseEntity<List<BookingDTO>> getBookingsByResourceId(@PathVariable Long resourceId) {
+        List<BookingDTO> bookings = bookingService.getBookingsByResourceId(resourceId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    // GET ACTIVE BOOKINGS BY USERNAME
+    @GetMapping("/user/{username}/active")
+    public ResponseEntity<List<BookingDTO>> getActiveBookingsByUsername(@PathVariable String username) {
+        List<BookingDTO> bookings = bookingService.getActiveBookingsByUsername(username);
+        return ResponseEntity.ok(bookings);
+    }
+
+    // GET ACTIVE BOOKINGS BY RESOURCE ID
+    @GetMapping("/resource/{resourceId}/active")
+    public ResponseEntity<List<BookingDTO>> getActiveBookingsByResourceId(@PathVariable Long resourceId) {
+        List<BookingDTO> bookings = bookingService.getActiveBookingsByResourceId(resourceId);
+        return ResponseEntity.ok(bookings);
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public BookingDTO updateBooking(
+    public ResponseEntity<BookingDTO> updateBooking(
             @PathVariable Long id,
-            @RequestBody Booking booking) {
-        return bookingService.updateBooking(id, booking);
+            @Valid @RequestBody Booking booking) {
+        BookingDTO updated = bookingService.updateBooking(id, booking);
+        return ResponseEntity.ok(updated);
     }
 
-    // 🔥 APPROVE
+    // DELETE (cancel instead of delete)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
+        return ResponseEntity.ok("Booking cancelled successfully");
+    }
+
+    // APPROVE
     @PutMapping("/{id}/approve")
-    public Booking approve(@PathVariable Long id) {
-        return bookingService.approveBooking(id);
+    public ResponseEntity<BookingDTO> approve(@PathVariable Long id) {
+        BookingDTO approved = bookingService.approveBooking(id);
+        return ResponseEntity.ok(approved);
     }
 
-    // 🔥 REJECT
+    // REJECT
     @PutMapping("/{id}/reject")
-    public Booking reject(@PathVariable Long id,
+    public ResponseEntity<BookingDTO> reject(@PathVariable Long id,
             @RequestParam String reason) {
-        return bookingService.rejectBooking(id, reason);
+        BookingDTO rejected = bookingService.rejectBooking(id, reason);
+        return ResponseEntity.ok(rejected);
     }
 
-    // 🔥 CANCEL
+    // CANCEL
     @PutMapping("/{id}/cancel")
-    public Booking cancel(@PathVariable Long id) {
-        return bookingService.cancelBooking(id);
+    public ResponseEntity<BookingDTO> cancel(@PathVariable Long id) {
+        BookingDTO cancelled = bookingService.cancelBooking(id);
+        return ResponseEntity.ok(cancelled);
     }
 }
