@@ -6,14 +6,20 @@ import com.smartcampus.backend.entity.Resource;
 import com.smartcampus.backend.dto.BookingDTO;
 import com.smartcampus.backend.exception.BookingConflictException;
 import com.smartcampus.backend.exception.BookingNotFoundException;
+import com.smartcampus.backend.exception.ResourceNotFoundException;
 import com.smartcampus.backend.repository.BookingRepository;
 import com.smartcampus.backend.repository.ResourceRepository;
 
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Validated
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -25,10 +31,12 @@ public class BookingService {
         this.resourceRepository = resourceRepository;
     }
 
-    // 🔥 CREATE BOOKING
-    public BookingDTO createBooking(Booking booking) {
+    // CREATE BOOKING with validation
+    @Transactional
+    public BookingDTO createBooking(@Valid Booking booking) {
+        validateBookingTimeRange(booking);
 
-        // 🔥 CHECK CONFLICT
+        // CHECK CONFLICT
         List<Booking> conflicts = bookingRepository
                 .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThan(
                         booking.getResource().getId(),
@@ -39,15 +47,18 @@ public class BookingService {
             throw new BookingConflictException("Resource already booked for this time slot");
         }
 
-        // 🔥 SET DEFAULT STATUS
+        // Validate resource exists
+        Resource resource = resourceRepository.findById(booking.getResource().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", booking.getResource().getId()));
+
+        booking.setResource(resource);
         booking.setStatus(BookingStatus.PENDING);
 
         Booking saved = bookingRepository.save(booking);
-
         return convertToDTO(saved);
     }
 
-    // 🔥 GET ALL
+    // GET ALL
     public List<BookingDTO> getAllBookings() {
         return bookingRepository.findAll()
                 .stream()
@@ -55,43 +66,48 @@ public class BookingService {
                 .toList();
     }
 
-    // 🔥 GET BY ID
+    // GET BY ID
     public BookingDTO getBookingById(Long id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
 
         return convertToDTO(booking);
     }
 
-    // 🔥 DELETE
+    // DELETE (cancel instead of delete)
+    @Transactional
     public void deleteBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
 
-        bookingRepository.delete(booking);
+        // Instead of deleting, mark as cancelled
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
     }
 
-    // 🔥 UPDATE
-    public BookingDTO updateBooking(Long id, Booking updatedBooking) {
+    // UPDATE with validation
+    @Transactional
+    public BookingDTO updateBooking(Long id, @Valid Booking updatedBooking) {
+        validateBookingTimeRange(updatedBooking);
 
         Booking existing = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
 
-        // 🔥 CHECK CONFLICT
+        // CHECK CONFLICT (excluding current booking)
         List<Booking> conflicts = bookingRepository
-                .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                .findByResourceIdAndStartTimeLessThanAndEndTimeGreaterThanAndIdNot(
                         updatedBooking.getResource().getId(),
                         updatedBooking.getEndTime(),
-                        updatedBooking.getStartTime());
-
-        conflicts.removeIf(b -> b.getId().equals(id));
+                        updatedBooking.getStartTime(),
+                        id);
 
         if (!conflicts.isEmpty()) {
             throw new BookingConflictException("Resource already booked for this time slot");
         }
 
-        Resource resource = resourceRepository.findById(
-                updatedBooking.getResource().getId()).orElseThrow(() -> new RuntimeException("Resource not found"));
+        // Validate resource exists
+        Resource resource = resourceRepository.findById(updatedBooking.getResource().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Resource", updatedBooking.getResource().getId()));
 
         existing.setResource(resource);
         existing.setBookedBy(updatedBooking.getBookedBy());
@@ -99,44 +115,110 @@ public class BookingService {
         existing.setEndTime(updatedBooking.getEndTime());
 
         Booking saved = bookingRepository.save(existing);
-
         return convertToDTO(saved);
     }
 
-    // 🔥 APPROVE
-    public Booking approveBooking(Long id) {
+    // GET BOOKINGS BY USERNAME
+    public List<BookingDTO> getBookingsByUsername(String username) {
+        return bookingRepository.findByBookedBy(username)
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    // GET BOOKINGS BY RESOURCE ID
+    public List<BookingDTO> getBookingsByResourceId(Long resourceId) {
+        return bookingRepository.findByResourceId(resourceId)
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    // GET ACTIVE BOOKINGS BY USERNAME
+    public List<BookingDTO> getActiveBookingsByUsername(String username) {
+        return bookingRepository.findByBookedByAndStatusIn(
+                username,
+                List.of(BookingStatus.PENDING, BookingStatus.APPROVED)
+        )
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    // GET ACTIVE BOOKINGS BY RESOURCE ID
+    public List<BookingDTO> getActiveBookingsByResourceId(Long resourceId) {
+        return bookingRepository.findByResourceIdAndStatusIn(
+                resourceId,
+                List.of(BookingStatus.PENDING, BookingStatus.APPROVED)
+        )
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    // APPROVE
+    @Transactional
+    public BookingDTO approveBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
 
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new RuntimeException("Only pending bookings can be approved");
+            throw new IllegalStateException("Only pending bookings can be approved");
         }
 
         booking.setStatus(BookingStatus.APPROVED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        return convertToDTO(saved);
     }
 
-    // 🔥 REJECT
-    public Booking rejectBooking(Long id, String reason) {
+    // REJECT
+    @Transactional
+    public BookingDTO rejectBooking(Long id, String reason) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new IllegalStateException("Only pending bookings can be rejected");
+        }
 
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        return convertToDTO(saved);
     }
 
-    // 🔥 CANCEL
-    public Booking cancelBooking(Long id) {
+    // CANCEL
+    @Transactional
+    public BookingDTO cancelBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found with id: " + id));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalStateException("Booking is already cancelled");
+        }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+        return convertToDTO(saved);
     }
 
-    // 🔥 DTO CONVERSION
+    // VALIDATION HELPER METHOD
+    private void validateBookingTimeRange(Booking booking) {
+        if (booking.getStartTime() == null || booking.getEndTime() == null) {
+            throw new IllegalArgumentException("Start time and end time are required");
+        }
+
+        if (!booking.getStartTime().isBefore(booking.getEndTime())) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
+        if (booking.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Start time must be in the future");
+        }
+    }
+
+    // DTO CONVERSION
     private BookingDTO convertToDTO(Booking booking) {
         BookingDTO dto = new BookingDTO();
 
@@ -144,9 +226,13 @@ public class BookingService {
         dto.setBookedBy(booking.getBookedBy());
         dto.setStartTime(booking.getStartTime());
         dto.setEndTime(booking.getEndTime());
+        dto.setStatus(booking.getStatus());
+        dto.setRejectionReason(booking.getRejectionReason());
 
-        dto.setResourceId(booking.getResource().getId());
-        dto.setResourceName(booking.getResource().getName());
+        if (booking.getResource() != null) {
+            dto.setResourceId(booking.getResource().getId());
+            dto.setResourceName(booking.getResource().getName());
+        }
 
         return dto;
     }

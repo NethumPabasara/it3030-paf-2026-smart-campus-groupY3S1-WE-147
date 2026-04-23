@@ -1,5 +1,6 @@
 package com.smartcampus.backend.dto;
 
+import com.smartcampus.backend.entity.BookingStatus;
 import java.time.LocalDateTime;
 
 public class BookingDTO {
@@ -10,7 +11,8 @@ public class BookingDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String resourceName;
-    
+    private BookingStatus status;
+    private String rejectionReason;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -29,10 +31,26 @@ public class BookingDTO {
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
     public String getResourceName() {
-    return resourceName;
+        return resourceName;
     }
 
     public void setResourceName(String resourceName) {
-    this.resourceName = resourceName;
+        this.resourceName = resourceName;
+    }
+
+    public BookingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BookingStatus status) {
+        this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

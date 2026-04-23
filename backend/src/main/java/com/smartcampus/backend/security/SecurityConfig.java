@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/error").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
+                        // Swagger UI endpoints
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/resources/**").hasRole("ADMIN")
                         .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())
