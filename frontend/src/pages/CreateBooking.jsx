@@ -116,7 +116,9 @@ bookedBy: username,
               required
             >
               <option value="">Select a resource</option>
-              {resources.map((resource) => (
+              {resources
+                .filter((resource) => resource.status?.toUpperCase() === 'ACTIVE')
+                .map((resource) => (
                 <option key={resource.id} value={resource.id}>
                   {resource.name || resource.type} - {resource.type}
                 </option>
