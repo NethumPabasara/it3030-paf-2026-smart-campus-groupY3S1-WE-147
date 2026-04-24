@@ -1,6 +1,9 @@
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 
+// Role-based authorization
+const userRole = "ADMIN"; // Change to "USER" for user access
+
 function Sidebar() {
   return (
     <div className="sidebar">
@@ -21,6 +24,7 @@ function Sidebar() {
           </NavLink>
         </li>
 
+        {userRole === 'ADMIN' && (
         <li>
           <NavLink
             to="/bookings"
@@ -31,6 +35,7 @@ function Sidebar() {
             Bookings
           </NavLink>
         </li>
+        )}
 
         <li>
           <NavLink
