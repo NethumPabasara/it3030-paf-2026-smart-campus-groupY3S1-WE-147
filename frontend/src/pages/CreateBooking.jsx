@@ -46,6 +46,12 @@ function CreateBooking() {
     setMessage(null);
 
     try {
+      // Get current user from localStorage
+      const savedUser = JSON.parse(localStorage.getItem("user"));
+      const username = savedUser?.username;
+
+      console.log("Creating booking for:", username);
+
       const response = await fetch("http://localhost:8080/api/bookings", {
         method: 'POST',
         headers: {
@@ -55,7 +61,7 @@ function CreateBooking() {
           resource: {
   id: parseInt(formData.resourceId)
 },
-bookedBy: "testuser", // temporary (we will fix properly later)
+bookedBy: username,
           startTime: formData.startTime + ":00",
           endTime: formData.endTime + ":00",
           purpose: formData.purpose

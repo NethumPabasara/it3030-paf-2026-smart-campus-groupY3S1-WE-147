@@ -2,20 +2,38 @@ import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
 
-// Role-based authorization
-const userRole = "ADMIN"; // Change to "USER" for user access
-
 function Sidebar() {
   const [user, setUser] = useState(null);
 
+  // Get user role from logged-in user, default to null if not logged in
+  const userRole = user?.role || null;
+
   useEffect(() => {
-    // Check if user is logged in (basic implementation)
+    // Check if user is logged in from localStorage first
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+    // Check for OAuth login redirect
     const checkLoginStatus = () => {
-      // This is a simple check - in real implementation, you'd check tokens/session
       const urlParams = new URLSearchParams(window.location.search);
-      const username = urlParams.get('username');
-      if (username) {
-        setUser({ username, loggedIn: true });
+      const username = urlParams.get("username");
+      const role = urlParams.get("role");
+      
+      if (username && role) {
+        const userData = {
+          username,
+          role,
+          loggedIn: true
+        };
+        
+        // Save to localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+        
+        // Update state
+        setUser(userData);
+        
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -43,7 +61,7 @@ function Sidebar() {
           </NavLink>
         </li>
 
-        {userRole === 'ADMIN' && (
+        {(userRole === 'ADMIN' || userRole === 'USER') && (
         <li>
           <NavLink
             to="/bookings"

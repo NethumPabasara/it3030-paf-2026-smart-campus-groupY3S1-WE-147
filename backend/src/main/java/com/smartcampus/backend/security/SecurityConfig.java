@@ -46,10 +46,10 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler()))
 
                 .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(customOidcUserService))
-                        // Redirect to frontend with username upon successful login
-                        .successHandler(customSuccessHandler()))
+        .loginPage("/oauth2/authorization/google") // ⭐ ADD THIS LINE
+        .userInfoEndpoint(userInfo -> userInfo
+                .oidcUserService(customOidcUserService))
+        .successHandler(customSuccessHandler()))
 
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
@@ -81,7 +81,11 @@ public class SecurityConfig {
     public AuthenticationSuccessHandler customSuccessHandler() {
         return (request, response, authentication) -> {
             String userEmail = authentication.getName();
-            response.sendRedirect("http://localhost:5173?username=" + userEmail);
+            
+            // Assign role based on email
+            String role = userEmail.equals("pabasara.e.g@gmail.com") ? "ADMIN" : "USER";
+            
+            response.sendRedirect("http://localhost:5173?username=" + userEmail + "&role=" + role);
         };
     }
 
