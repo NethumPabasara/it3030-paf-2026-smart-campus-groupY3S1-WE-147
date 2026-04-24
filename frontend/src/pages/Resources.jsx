@@ -117,7 +117,7 @@ function Resources() {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .resources-table-container {
           border-radius: var(--border-radius);
           overflow: hidden;

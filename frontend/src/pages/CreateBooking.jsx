@@ -52,9 +52,12 @@ function CreateBooking() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          resourceId: parseInt(formData.resourceId),
-          startTime: formData.startTime,
-          endTime: formData.endTime,
+          resource: {
+  id: parseInt(formData.resourceId)
+},
+bookedBy: "testuser", // temporary (we will fix properly later)
+          startTime: formData.startTime + ":00",
+          endTime: formData.endTime + ":00",
           purpose: formData.purpose
         })
       });
@@ -68,6 +71,8 @@ function CreateBooking() {
           purpose: ''
         });
       } else {
+        const errorData = await response.text();   // 👈 ADD THIS
+        console.log("Backend error:", errorData); 
         throw new Error('Failed to create booking');
       }
     } catch (error) {
@@ -162,7 +167,7 @@ function CreateBooking() {
         </form>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .booking-form {
           display: flex;
           flex-direction: column;

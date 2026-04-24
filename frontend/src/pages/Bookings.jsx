@@ -151,7 +151,7 @@ function Bookings() {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .bookings-table-container {
           border-radius: var(--border-radius);
           overflow: hidden;
