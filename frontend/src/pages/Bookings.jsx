@@ -557,12 +557,15 @@ function Bookings() {
       <style>{`
         .bookings-table-container {
           border-radius: var(--border-radius);
-          overflow: hidden;
+          overflow-x: auto;
+          overflow-y: hidden;
+          box-shadow: inset 0 0 0 1px var(--border);
         }
 
         .bookings-header {
           display: grid;
-          grid-template-columns: 70px 1.2fr 1fr 100px 160px 160px 180px 120px;
+          grid-template-columns: 70px 1.2fr 1fr 100px 160px 160px 180px 140px;
+          min-width: 1100px;
           background: linear-gradient(135deg, var(--primary), var(--secondary));
           color: white;
           font-weight: 600;
@@ -580,7 +583,8 @@ function Bookings() {
 
         .booking-row {
           display: grid;
-          grid-template-columns: 70px 1.2fr 1fr 100px 160px 160px 180px 120px;
+          grid-template-columns: 70px 1.2fr 1fr 100px 160px 160px 180px 140px;
+          min-width: 1100px;
           padding: 12px 16px;
           border-bottom: 1px solid var(--border);
           transition: var(--transition);
