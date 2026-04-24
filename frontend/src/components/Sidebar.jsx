@@ -113,13 +113,56 @@ function Sidebar() {
       {/* User Authentication Section */}
       <div className="sidebar-auth">
         {user && user.loggedIn ? (
-          <div className="user-info">
-            <div className="user-avatar-small">
+          <div className="user-info" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px', 
+            padding: '14px', 
+            background: 'rgba(255,255,255,0.1)', 
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            margin: '0 10px 20px 10px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <div className="user-avatar-small" style={{
+              width: '42px',
+              height: '42px',
+              minWidth: '42px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold',
+              fontSize: '1.2rem',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}>
               {user.username.charAt(0).toUpperCase()}
             </div>
-            <div className="user-details">
-              <div className="username">{user.username}</div>
-              <div className="login-status">Logged in</div>
+            <div className="user-details" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}>
+              <div className="username" style={{
+                color: 'white',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }} title={user.username}>
+                {user.username}
+              </div>
+              <div className="login-status" style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '0.75rem',
+                marginTop: '4px',
+                fontWeight: '500'
+              }}>
+                ● Logged in
+              </div>
             </div>
           </div>
         ) : (
