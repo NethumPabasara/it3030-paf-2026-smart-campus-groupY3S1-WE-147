@@ -16,7 +16,7 @@ function CreateBooking() {
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/resources");
+        const response = await fetch("http://localhost:8080/api/resources", { credentials: "include" });
         const data = await response.json();
         
         // Handle both wrapped and direct array responses
@@ -54,6 +54,7 @@ function CreateBooking() {
 
       const response = await fetch("http://localhost:8080/api/bookings", {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
