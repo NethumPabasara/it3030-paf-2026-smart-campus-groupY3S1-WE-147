@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import '../styles/theme.css';
 
-// Role-based authorization
-const userRole = "ADMIN"; // Change to "ADMIN" for admin access
-
 function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,17 +8,89 @@ function Bookings() {
   const [actionMessage, setActionMessage] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [user, setUser] = useState(null);
+
+  // Get user role from logged-in user, default to null if not logged in
+  const userRole = user?.role || null;
+
+  useEffect(() => {
+    // Load user from localStorage
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/bookings");
-        const data = await response.json();
-        setBookings(data);
+        // Get current user info
+        const savedUser = localStorage.getItem("user");
+        const user = savedUser ? JSON.parse(savedUser) : null;
+        const username = user?.username;
+        const role = user?.role;
+
+        // Debug logging
+        console.log("Debug - User data:", { user, username, role });
+
+        let response;
+        let url;
+        let data;
+        
+        // Fetch bookings based on role
+        if (role === "ADMIN") {
+          url = "http://localhost:8080/api/bookings";
+          response = await fetch(url);
+        } else if (role === "USER" && username) {
+          url = `http://localhost:8080/api/bookings/user/${username}`;
+          console.log("Debug - Fetching user bookings from:", url);
+          response = await fetch(url);
+          
+          // If user-specific endpoint fails, fall back to all bookings and filter
+          if (!response.ok) {
+            console.log("Debug - User endpoint failed, falling back to all bookings");
+            response = await fetch("http://localhost:8080/api/bookings");
+            if (response.ok) {
+              const allBookings = await response.json();
+              // Filter bookings for current user
+              data = allBookings.filter(booking => booking.bookedBy === username);
+              console.log("Debug - Filtered bookings for user:", data);
+            }
+          }
+        } else {
+          // If no user or role, don't fetch
+          console.log("Debug - No user or role found, skipping fetch");
+          setLoading(false);
+          return;
+        }
+
+        console.log("Debug - API response status:", response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // If we haven't already got data (from fallback logic)
+        if (!data) {
+          data = await response.json();
+          console.log("Debug - Bookings data:", data);
+          
+          // If USER role and we got all bookings, filter for user
+          if (role === "USER" && username && Array.isArray(data)) {
+            const filteredData = data.filter(booking => booking.bookedBy === username);
+            console.log("Debug - Filtered bookings for user:", filteredData);
+            setBookings(filteredData);
+          } else {
+            setBookings(data);
+          }
+        } else {
+          setBookings(data);
+        }
+        
         setError(null);
       } catch (error) {
         console.error("Error fetching bookings:", error);
-        setError("Failed to load bookings");
+        setError(`Failed to load bookings: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -94,8 +163,42 @@ function Bookings() {
 
   const refreshBookings = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/bookings");
-      const data = await response.json();
+      // Get current user info
+      const savedUser = localStorage.getItem("user");
+      const user = savedUser ? JSON.parse(savedUser) : null;
+      const username = user?.username;
+      const role = user?.role;
+
+      let response;
+      let data;
+      
+      // Fetch bookings based on role
+      if (role === "ADMIN") {
+        response = await fetch("http://localhost:8080/api/bookings");
+      } else if (role === "USER" && username) {
+        response = await fetch(`http://localhost:8080/api/bookings/user/${username}`);
+        
+        // If user-specific endpoint fails, fall back to all bookings and filter
+        if (!response.ok) {
+          response = await fetch("http://localhost:8080/api/bookings");
+          if (response.ok) {
+            const allBookings = await response.json();
+            data = allBookings.filter(booking => booking.bookedBy === username);
+          }
+        }
+      } else {
+        return;
+      }
+
+      if (!data) {
+        data = await response.json();
+        
+        // If USER role and we got all bookings, filter for user
+        if (role === "USER" && username && Array.isArray(data)) {
+          data = data.filter(booking => booking.bookedBy === username);
+        }
+      }
+      
       setBookings(data);
     } catch (error) {
       console.error("Error refreshing bookings:", error);
@@ -169,6 +272,51 @@ function Bookings() {
     setActionMessage(null);
   };
 
+  const handleEdit = async (booking) => {
+    // For now, just show a message - in a real app, you'd open an edit form
+    setActionMessage('Edit functionality would open booking edit form');
+  };
+
+  const handleDelete = async (bookingId) => {
+    // Get current user info for ownership check
+    const savedUser = localStorage.getItem("user");
+    const user = savedUser ? JSON.parse(savedUser) : null;
+    const username = user?.username;
+    const role = user?.role;
+
+    // Safety check: only allow USER to delete their own bookings
+    if (role !== 'USER') {
+      setActionMessage('Access denied');
+      return;
+    }
+
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking || booking.bookedBy !== username) {
+      setActionMessage('Access denied - not your booking');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to cancel this booking?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/bookings/${bookingId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setActionMessage('Booking cancelled successfully');
+        await refreshBookings();
+      } else {
+        throw new Error('Failed to cancel booking');
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      setActionMessage('Failed to cancel booking');
+    }
+  };
+
   return (
     <>
       <h1 className="heading-1">Bookings</h1>
@@ -229,9 +377,9 @@ function Bookings() {
                   <div className="booking-cell booking-id">#{b.id}</div>
                   <div className="booking-cell booking-user">
                     <div className="user-avatar">
-                      {b.username?.charAt(0)?.toUpperCase() || 'U'}
+                      {b.bookedBy?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
-                    <span>{b.username}</span>
+                    <span>{b.bookedBy}</span>
                   </div>
                   <div className="booking-cell booking-resource">{b.resourceId}</div>
                   <div className="booking-cell booking-status">
@@ -241,6 +389,7 @@ function Bookings() {
                   <div className="booking-cell booking-time">{formatDateTime(b.endTime)}</div>
                   <div className="booking-cell booking-reason">{getRejectionReason(b.rejection_reason, b.status)}</div>
                   <div className="booking-cell booking-actions">
+                    {/* ADMIN: Approve/Reject buttons */}
                     {b.status?.toLowerCase() === 'pending' && userRole === 'ADMIN' && (
                       <div className="action-buttons">
                         <button
@@ -257,6 +406,8 @@ function Bookings() {
                         </button>
                       </div>
                     )}
+                    
+                    {/* ADMIN: Reject form */}
                     {rejectingId === b.id && userRole === 'ADMIN' && (
                       <div className="reject-form">
                         <textarea
@@ -280,6 +431,31 @@ function Bookings() {
                             Cancel
                           </button>
                         </div>
+                      </div>
+                    )}
+                    
+                    {/* USER: Edit/Delete buttons for own bookings */}
+                    {(() => {
+                      console.log("Debug - Button visibility check:", {
+                        userRole,
+                        bookingUsername: b.bookedBy,
+                        currentUsername: user?.username
+                      });
+                      return userRole === 'USER' && b.bookedBy === user?.username;
+                    })() && (
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => handleEdit(b)}
+                          className="btn-edit"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(b.id)}
+                          className="btn-delete"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     )}
                   </div>
@@ -393,7 +569,9 @@ function Bookings() {
         .btn-approve,
         .btn-reject,
         .btn-confirm-reject,
-        .btn-cancel-reject {
+        .btn-cancel-reject,
+        .btn-edit,
+        .btn-delete {
           padding: 6px 12px;
           border: none;
           border-radius: 6px;
@@ -469,6 +647,26 @@ function Bookings() {
 
         .btn-cancel-reject:hover {
           background-color: #4B5563;
+        }
+
+        .btn-edit {
+          background-color: #3B82F6;
+          color: white;
+        }
+
+        .btn-edit:hover {
+          background-color: #2563EB;
+          transform: translateY(-1px);
+        }
+
+        .btn-delete {
+          background-color: #F59E0B;
+          color: white;
+        }
+
+        .btn-delete:hover {
+          background-color: #D97706;
+          transform: translateY(-1px);
         }
 
         @media (max-width: 1024px) {
