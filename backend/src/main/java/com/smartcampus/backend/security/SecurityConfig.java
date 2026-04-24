@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(customOidcUserService))
-                        // Return JSON upon successful login instead of redirecting
+                        // Redirect to frontend with username upon successful login
                         .successHandler(customSuccessHandler()))
 
                 .formLogin(form -> form.disable())
@@ -80,10 +80,8 @@ public class SecurityConfig {
     @Bean
     public AuthenticationSuccessHandler customSuccessHandler() {
         return (request, response, authentication) -> {
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter()
-                    .write("{\"message\": \"Login successful\", \"username\": \"" + authentication.getName() + "\"}");
+            String userEmail = authentication.getName();
+            response.sendRedirect("http://localhost:5173?username=" + userEmail);
         };
     }
 

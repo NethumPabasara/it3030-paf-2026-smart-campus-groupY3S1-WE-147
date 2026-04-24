@@ -1,10 +1,29 @@
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
 
 // Role-based authorization
 const userRole = "ADMIN"; // Change to "USER" for user access
 
 function Sidebar() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in (basic implementation)
+    const checkLoginStatus = () => {
+      // This is a simple check - in real implementation, you'd check tokens/session
+      const urlParams = new URLSearchParams(window.location.search);
+      const username = urlParams.get('username');
+      if (username) {
+        setUser({ username, loggedIn: true });
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
   return (
     <div className="sidebar">
       <div className="sidebar-logo-container">
@@ -70,6 +89,28 @@ function Sidebar() {
           </NavLink>
         </li>
       </ul>
+
+      {/* User Authentication Section */}
+      <div className="sidebar-auth">
+        {user && user.loggedIn ? (
+          <div className="user-info">
+            <div className="user-avatar-small">
+              {user.username.charAt(0).toUpperCase()}
+            </div>
+            <div className="user-details">
+              <div className="username">{user.username}</div>
+              <div className="login-status">Logged in</div>
+            </div>
+          </div>
+        ) : (
+          <a 
+            href="http://localhost:8080/oauth2/authorization/google"
+            className="login-btn"
+          >
+            Login with Google
+          </a>
+        )}
+      </div>
     </div>
   );
 }
