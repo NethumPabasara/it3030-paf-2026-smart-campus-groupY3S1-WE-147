@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import '../styles/theme.css';
 
+// Role-based authorization
+const userRole = "ADMIN"; // Change to "ADMIN" for admin access
+
 function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +103,11 @@ function Bookings() {
   };
 
   const handleApprove = async (bookingId) => {
+    if (userRole !== 'ADMIN') {
+      setActionMessage('Access denied');
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:8080/api/bookings/${bookingId}/approve`, {
         method: 'PUT'
@@ -118,6 +126,11 @@ function Bookings() {
   };
 
   const handleReject = async (bookingId) => {
+    if (userRole !== 'ADMIN') {
+      setActionMessage('Access denied');
+      return;
+    }
+
     if (!rejectReason.trim()) {
       setActionMessage('Please provide a rejection reason');
       return;
@@ -228,7 +241,7 @@ function Bookings() {
                   <div className="booking-cell booking-time">{formatDateTime(b.endTime)}</div>
                   <div className="booking-cell booking-reason">{getRejectionReason(b.rejection_reason, b.status)}</div>
                   <div className="booking-cell booking-actions">
-                    {b.status?.toLowerCase() === 'pending' && (
+                    {b.status?.toLowerCase() === 'pending' && userRole === 'ADMIN' && (
                       <div className="action-buttons">
                         <button
                           onClick={() => handleApprove(b.id)}
@@ -244,7 +257,7 @@ function Bookings() {
                         </button>
                       </div>
                     )}
-                    {rejectingId === b.id && (
+                    {rejectingId === b.id && userRole === 'ADMIN' && (
                       <div className="reject-form">
                         <textarea
                           value={rejectReason}
