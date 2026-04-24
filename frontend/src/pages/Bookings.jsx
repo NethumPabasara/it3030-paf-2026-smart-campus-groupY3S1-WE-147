@@ -41,16 +41,16 @@ function Bookings() {
         // Fetch bookings based on role
         if (role === "ADMIN") {
           url = "http://localhost:8080/api/bookings";
-          response = await fetch(url);
+          response = await fetch(url, { credentials: "include" });
         } else if (role === "USER" && username) {
           url = `http://localhost:8080/api/bookings/user/${username}`;
           console.log("Debug - Fetching user bookings from:", url);
-          response = await fetch(url);
+          response = await fetch(url, { credentials: "include" });
           
           // If user-specific endpoint fails, fall back to all bookings and filter
           if (!response.ok) {
             console.log("Debug - User endpoint failed, falling back to all bookings");
-            response = await fetch("http://localhost:8080/api/bookings");
+            response = await fetch("http://localhost:8080/api/bookings", { credentials: "include" });
             if (response.ok) {
               const allBookings = await response.json();
               // Filter bookings for current user
@@ -175,13 +175,13 @@ function Bookings() {
       
       // Fetch bookings based on role
       if (role === "ADMIN") {
-        response = await fetch("http://localhost:8080/api/bookings");
+        response = await fetch("http://localhost:8080/api/bookings", { credentials: "include" });
       } else if (role === "USER" && username) {
-        response = await fetch(`http://localhost:8080/api/bookings/user/${username}`);
+        response = await fetch(`http://localhost:8080/api/bookings/user/${username}`, { credentials: "include" });
         
         // If user-specific endpoint fails, fall back to all bookings and filter
         if (!response.ok) {
-          response = await fetch("http://localhost:8080/api/bookings");
+          response = await fetch("http://localhost:8080/api/bookings", { credentials: "include" });
           if (response.ok) {
             const allBookings = await response.json();
             data = allBookings.filter(booking => booking.bookedBy === username);
@@ -214,7 +214,8 @@ function Bookings() {
 
     try {
       const response = await fetch(`http://localhost:8080/api/bookings/${bookingId}/approve`, {
-        method: 'PUT'
+        method: 'PUT',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -243,7 +244,7 @@ function Bookings() {
     try {
       const res = await fetch(
         `http://localhost:8080/api/bookings/${bookingId}/reject?reason=${encodeURIComponent(rejectReason)}`,
-        { method: 'PUT' }
+        { method: 'PUT', credentials: 'include' }
       );
 
       if (res.ok) {
@@ -283,6 +284,7 @@ function Bookings() {
         `http://localhost:8080/api/bookings/${editingBooking.id}`,
         {
           method: "PUT",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json"
           },
@@ -334,7 +336,8 @@ function Bookings() {
 
     try {
       const response = await fetch(`http://localhost:8080/api/bookings/${bookingId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
