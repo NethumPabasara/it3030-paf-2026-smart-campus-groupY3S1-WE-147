@@ -529,7 +529,7 @@ function Bookings() {
                         bookingUsername: b.bookedBy,
                         currentUsername: user?.username
                       });
-                      return userRole === 'USER' && b.bookedBy === user?.username && b.status?.toLowerCase() !== 'cancelled';
+                      return userRole === 'USER' && b.bookedBy === user?.username && b.status?.toLowerCase() === 'pending';
                     })() && (
                       <div className="action-buttons">
                         <button
