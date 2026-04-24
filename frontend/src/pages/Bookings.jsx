@@ -9,6 +9,7 @@ function Bookings() {
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [user, setUser] = useState(null);
+  const [editingBooking, setEditingBooking] = useState(null);
 
   // Get user role from logged-in user, default to null if not logged in
   const userRole = user?.role || null;
@@ -272,9 +273,40 @@ function Bookings() {
     setActionMessage(null);
   };
 
-  const handleEdit = async (booking) => {
-    // For now, just show a message - in a real app, you'd open an edit form
-    setActionMessage('Edit functionality would open booking edit form');
+  const handleEdit = (booking) => {
+    setEditingBooking(booking);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/bookings/${editingBooking.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            resource: { id: editingBooking.resourceId },
+            bookedBy: editingBooking.bookedBy,
+            startTime: editingBooking.startTime.slice(0, 16) + ":00",
+            endTime: editingBooking.endTime.slice(0, 16) + ":00",
+            purpose: editingBooking.purpose
+          })
+        }
+      );
+
+      if (response.ok) {
+        setActionMessage("Booking updated successfully");
+        setEditingBooking(null);
+        await refreshBookings();
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (error) {
+      console.error(error);
+      setActionMessage("Failed to update booking");
+    }
   };
 
   const handleDelete = async (bookingId) => {
@@ -346,6 +378,59 @@ function Bookings() {
           }}>
             {actionMessage}
           </p>
+        </div>
+      )}
+
+      {editingBooking && (
+        <div className="card" style={{ marginBottom: '20px', padding: '20px' }}>
+          <h3 style={{ marginBottom: '15px' }}>Edit Booking</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '500px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>Start Time</label>
+              <input
+                type="datetime-local"
+                style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'var(--card-bg)', color: 'var(--text)' }}
+                value={editingBooking.startTime?.slice(0, 16)}
+                onChange={(e) =>
+                  setEditingBooking({
+                    ...editingBooking,
+                    startTime: e.target.value
+                  })
+                }
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>End Time</label>
+              <input
+                type="datetime-local"
+                style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'var(--card-bg)', color: 'var(--text)' }}
+                value={editingBooking.endTime?.slice(0, 16)}
+                onChange={(e) =>
+                  setEditingBooking({
+                    ...editingBooking,
+                    endTime: e.target.value
+                  })
+                }
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>Purpose</label>
+              <textarea
+                style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'var(--card-bg)', color: 'var(--text)', minHeight: '80px', resize: 'vertical' }}
+                value={editingBooking.purpose || ""}
+                onChange={(e) =>
+                  setEditingBooking({
+                    ...editingBooking,
+                    purpose: e.target.value
+                  })
+                }
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <button className="btn-approve" onClick={handleUpdate} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Save</button>
+              <button className="btn-cancel-reject" onClick={() => setEditingBooking(null)} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>Cancel</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -441,7 +526,7 @@ function Bookings() {
                         bookingUsername: b.bookedBy,
                         currentUsername: user?.username
                       });
-                      return userRole === 'USER' && b.bookedBy === user?.username;
+                      return userRole === 'USER' && b.bookedBy === user?.username && b.status?.toLowerCase() !== 'cancelled';
                     })() && (
                       <div className="action-buttons">
                         <button
