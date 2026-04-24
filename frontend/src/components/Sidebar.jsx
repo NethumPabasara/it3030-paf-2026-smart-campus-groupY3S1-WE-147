@@ -45,6 +45,17 @@ function Sidebar() {
 
         <li>
           <NavLink
+            to="/create-booking"
+            className={({ isActive }) =>
+              `sidebar-menu-item ${isActive ? "active" : ""}`
+            }
+          >
+            Create Booking
+          </NavLink>
+        </li>
+
+        <li>
+          <NavLink
             to="/users"
             className={({ isActive }) =>
               `sidebar-menu-item ${isActive ? "active" : ""}`

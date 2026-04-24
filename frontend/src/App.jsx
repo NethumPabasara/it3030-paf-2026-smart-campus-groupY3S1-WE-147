@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import Resources from "./pages/Resources";
 import Users from "./pages/Users";
+import CreateBooking from "./pages/CreateBooking";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/create-booking" element={<CreateBooking />} />
       </Routes>
     </MainLayout>
   );
