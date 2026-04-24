@@ -35,9 +35,10 @@ public class SecurityConfig {
                         // Swagger UI endpoints
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/api/resources/**").hasRole("ADMIN")
+                        .requestMatchers("/api/resources/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
 
                 // Return JSON for 401 and 403 errors

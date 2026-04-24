@@ -96,6 +96,7 @@ function Sidebar() {
           </NavLink>
         </li>
 
+        {userRole === 'ADMIN' && (
         <li>
           <NavLink
             to="/users"
@@ -106,6 +107,7 @@ function Sidebar() {
             Users
           </NavLink>
         </li>
+        )}
       </ul>
 
       {/* User Authentication Section */}
